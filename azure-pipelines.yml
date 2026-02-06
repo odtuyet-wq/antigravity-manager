@@ -1,0 +1,21 @@
+trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pr:
+  branches:
+    include:
+      - "*"
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+
+  - script: |
+      chmod +x scripts/*.sh
+      sh scripts/ci-validate.sh
+    displayName: Validate compose and scripts (Linux)

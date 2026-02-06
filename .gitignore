@@ -1,0 +1,40 @@
+# ==============================================================================
+# ANTIGRAVITY MANAGER - GIT IGNORE
+# ==============================================================================
+
+# Secrets and runtime env
+.env
+.env/
+.env.*
+!.env.example
+
+# Docker/runtime data
+volumes/
+data/
+backups/
+
+# Archives / backups
+*.tar.gz
+*.zip
+*.bak
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp files
+tmp/
+temp/
+*.tmp

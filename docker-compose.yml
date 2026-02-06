@@ -1,0 +1,81 @@
+# ==============================================================================
+# ANTIGRAVITY MANAGER - DOCKER COMPOSE CONFIGURATION (LINUX)
+# ==============================================================================
+# Architecture:
+#   - rclone-sync: sync dữ liệu S3 <-> volume local
+#   - antigravity: web UI sử dụng volume local
+#
+# Lưu ý:
+# - Không dùng rclone mount/FUSE cho SQLite.
+# - antigravity chỉ start sau khi rclone-sync tạo READY flag.
+# - Secrets chỉ đọc từ .env.
+# ==============================================================================
+
+services:
+  rclone-sync:
+    image: rclone/rclone:latest
+    restart: unless-stopped
+
+    environment:
+      - REMOTE=${ANTIGRAVITY_MANAGER_REMOTE:-supabase}
+      - REMOTE_PATH=${ANTIGRAVITY_MANAGER_REMOTE_PATH}
+      - S3_ENDPOINT=${ANTIGRAVITY_MANAGER_S3_ENDPOINT}
+      - S3_REGION=${ANTIGRAVITY_MANAGER_S3_REGION:-auto}
+      - S3_ACCESS_KEY_ID=${ANTIGRAVITY_MANAGER_S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${ANTIGRAVITY_MANAGER_S3_SECRET_ACCESS_KEY}
+      - SYNC_INTERVAL_SECONDS=${ANTIGRAVITY_MANAGER_SYNC_INTERVAL_SECONDS:-60}
+      - MAX_RETRIES=${ANTIGRAVITY_MANAGER_SYNC_MAX_RETRIES:-5}
+      - RETRY_DELAY_SECONDS=${ANTIGRAVITY_MANAGER_SYNC_RETRY_DELAY_SECONDS:-5}
+      - RCLONE_LOG_LEVEL=${ANTIGRAVITY_MANAGER_RCLONE_LOG_LEVEL:-INFO}
+      - RCLONE_EXTRA_FLAGS=${ANTIGRAVITY_MANAGER_RCLONE_EXTRA_FLAGS:-}
+
+    volumes:
+      - antigravity_data:/data/.antigravity_tools
+      - shared_ready:/shared
+      - ./scripts/sync-entrypoint.sh:/sync-entrypoint.sh:ro
+
+    entrypoint: ["/bin/sh", "/sync-entrypoint.sh"]
+
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /shared/READY || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 10s
+
+    networks:
+      - antigravity-net
+
+  antigravity:
+    image: lbjlaq/antigravity-manager:latest
+    restart: unless-stopped
+
+    depends_on:
+      rclone-sync:
+        condition: service_healthy
+
+    environment:
+      - WEB_PASSWORD=${ANTIGRAVITY_MANAGER_WEB_PASSWORD}
+      - ABV_WEB_PASSWORD=${ANTIGRAVITY_MANAGER_WEB_PASSWORD}
+
+    ports:
+      - "${ANTIGRAVITY_MANAGER_HOST_PORT:-8045}:8045"
+
+    volumes:
+      - antigravity_data:/root/.antigravity_tools
+      - shared_ready:/shared:ro
+
+    # Không set healthcheck ở đây để tránh phụ thuộc tool (wget/curl)
+    # có thể không tồn tại trong image upstream.
+    networks:
+      - antigravity-net
+
+volumes:
+  antigravity_data:
+    driver: local
+  shared_ready:
+    driver: local
+
+networks:
+  antigravity-net:
+    driver: bridge

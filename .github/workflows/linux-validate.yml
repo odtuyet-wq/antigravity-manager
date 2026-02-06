@@ -1,0 +1,21 @@
+name: Linux Validate
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate compose and scripts
+        run: |
+          chmod +x scripts/*.sh
+          sh scripts/ci-validate.sh
