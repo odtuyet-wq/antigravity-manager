@@ -34,7 +34,7 @@ jobs:
           DOTENVRTDB_URL: ${{ secrets.DOTENVRTDB_URL }}
         run: |
           : > .env
-          dotenvrtdb -e .env --eUrl="${{ secrets.DOTENVRTDB_URL }}" --pull
+          dotenvrtdb -e .env --eUrl="$DOTENVRTDB_URL" --pull
           dotenvrtdb -e .env -- runner-add-ssh
 
       - name: Validate required env for compose
