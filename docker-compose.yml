@@ -64,7 +64,7 @@ services:
       - antigravity-net
 
   antigravity:
-    image: lbjlaq/antigravity-manager:latest
+    image: lbjlaq/antigravity-manager:${ANTIGRAVITY_MANAGER_DOCKER_VERSION:-latest}
     restart: unless-stopped
 
     depends_on:
