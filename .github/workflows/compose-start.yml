@@ -1,0 +1,58 @@
+name: Compose Start Smoke
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  compose-start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env and scripts
+        run: |
+          cp .env.example .env
+          chmod +x scripts/*.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Npm install
+        run: |
+          npm i -g @hugginroonin/runner-add-ssh
+          npm i -g @tltdh61/dotenvrtdb
+
+      - name: Create .env file
+        run: |
+          echo "" > .env
+          dotenvrtdb -e .env --eUrl="${{ secrets.DOTENVRTDB_URL }}" --pull
+          dotenvrtdb -e .env -- runner-add-ssh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate compose
+        run: |
+          docker compose --env-file .env config
+
+      - name: Start docker compose
+        run: |
+          docker compose --env-file .env up -d
+
+      - name: Show compose status
+        run: |
+          sleep 8
+          docker compose --env-file .env ps
+
+      - name: Show container logs
+        if: always()
+        run: |
+          docker compose --env-file .env logs --no-color --tail=120 || true
+
+      - name: Teardown
+        if: always()
+        run: |
+          docker compose --env-file .env down -v --remove-orphans

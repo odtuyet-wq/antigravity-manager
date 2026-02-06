@@ -1,21 +1,19 @@
-name: Linux Validate
+name: Linux Smoke Test
 
 on:
   push:
-    branches:
-      - main
-      - master
-  pull_request:
+  workflow_dispatch:
 
 jobs:
-  validate:
+  smoke-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate compose and scripts
+      - name: Validate scripts and compose
         run: |
           chmod +x scripts/*.sh
           sh scripts/ci-validate.sh
