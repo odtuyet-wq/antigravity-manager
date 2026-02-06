@@ -30,6 +30,8 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Create .env file
+        env:
+          DOTENVRTDB_URL: ${{ secrets.DOTENVRTDB_URL }}
         run: |
           : > .env
           dotenvrtdb -e .env --eUrl="${{ secrets.DOTENVRTDB_URL }}" --pull
@@ -39,9 +41,9 @@ jobs:
         run: |
           dotenvrtdb -e .env -- node -e "const req=['TAILSCALE_CLIENT_SECRET','CLOUDFLARED_CREDENTIALS','ANTIGRAVITY_MANAGER_WEB_PASSWORD','ANTIGRAVITY_MANAGER_REMOTE_PATH','ANTIGRAVITY_MANAGER_S3_ENDPOINT','ANTIGRAVITY_MANAGER_S3_ACCESS_KEY_ID','ANTIGRAVITY_MANAGER_S3_SECRET_ACCESS_KEY'];const miss=req.filter(k=>!process.env[k]);if(miss.length){console.error('Missing env: '+miss.join(', '));process.exit(1)};JSON.parse(process.env.CLOUDFLARED_CREDENTIALS);console.log('Required env looks good')"
 
-      - name: Render cloudflared config from .env
-        run: |
-          dotenvrtdb -e .env -- node -e "const fs=require('fs');const p='cloudflared-config.yml';const port=process.env.SSH_PORT||'2222';let y=fs.readFileSync(p,'utf8');if(y.includes('__SSH_PORT__')){y=y.replace(/__SSH_PORT__/g,port);fs.writeFileSync(p,y);console.log('cloudflared-config.yml rendered with SSH_PORT='+port)}else{console.log('cloudflared-config.yml already static; skip render')}"
+      # - name: Render cloudflared config from .env
+      #   run: |
+      #     dotenvrtdb -e .env -- node -e "const fs=require('fs');const p='cloudflared-config.yml';const port=process.env.SSH_PORT||'2222';let y=fs.readFileSync(p,'utf8');if(y.includes('__SSH_PORT__')){y=y.replace(/__SSH_PORT__/g,port);fs.writeFileSync(p,y);console.log('cloudflared-config.yml rendered with SSH_PORT='+port)}else{console.log('cloudflared-config.yml already static; skip render')}"
 
       - name: Create cloudflared credentials file from .env
         run: |

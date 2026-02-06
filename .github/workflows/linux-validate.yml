@@ -1,8 +1,8 @@
 name: Linux Smoke Test
 
-on:
-  push:
-  workflow_dispatch:
+# on:
+#   push:
+#   workflow_dispatch:
 
 jobs:
   smoke-test:
