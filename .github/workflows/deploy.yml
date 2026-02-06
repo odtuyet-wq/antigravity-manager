@@ -43,6 +43,10 @@ jobs:
         run: |
           dotenvrtdb -e .env -- node -e "const fs=require('fs');const p='cloudflared-config.yml';const port=process.env.SSH_PORT||'2222';let y=fs.readFileSync(p,'utf8');if(y.includes('__SSH_PORT__')){y=y.replace(/__SSH_PORT__/g,port);fs.writeFileSync(p,y);console.log('cloudflared-config.yml rendered with SSH_PORT='+port)}else{console.log('cloudflared-config.yml already static; skip render')}"
 
+      - name: Create cloudflared credentials file from .env
+        run: |
+          dotenvrtdb -e .env -- node -e "const fs=require('fs');const v=process.env.CLOUDFLARED_CREDENTIALS;if(!v)throw new Error('CLOUDFLARED_CREDENTIALS is missing');JSON.parse(v);fs.writeFileSync('cloudflared-credentials.json', v);console.log('cloudflared-credentials.json created');"
+
       - name: Start services
         run: |
           docker compose --env-file .env up -d

@@ -91,17 +91,10 @@ services:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     network_mode: "host"
-    entrypoint:
-      - /bin/sh
-      - -ec
-      - |
-        : "$${CLOUDFLARED_CREDENTIALS:?CLOUDFLARED_CREDENTIALS is required}"
-        printf '%s' "$${CLOUDFLARED_CREDENTIALS}" > /tmp/cloudflared-credentials.json
-        exec cloudflared tunnel --config /etc/cloudflared/config.yml --credentials-file /tmp/cloudflared-credentials.json run
-    environment:
-      - CLOUDFLARED_CREDENTIALS=${CLOUDFLARED_CREDENTIALS}
+    command: tunnel --config /etc/cloudflared/config.yml run
     volumes:
       - ./cloudflared-config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared-credentials.json:/etc/cloudflared/credentials.json:ro
 
 volumes:
   antigravity_data:
