@@ -147,7 +147,6 @@ run_rclone_sync() {
             "${destination_path}" \
             --log-level="${RCLONE_LOG_LEVEL}" \
             --s3-list-version=2 \
-            --verbose \
             --stats=10s \
             --stats-one-line \
             ${RCLONE_EXTRA_FLAGS}
@@ -157,7 +156,6 @@ run_rclone_sync() {
             "${destination_path}" \
             --log-level="${RCLONE_LOG_LEVEL}" \
             --s3-list-version=2 \
-            --verbose \
             --stats=10s \
             --stats-one-line
     fi
