@@ -1,0 +1,10 @@
+tunnel: b6834e6b-9709-446d-8838-9e3aa61b0152
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: odtuyet-wq-antigravity-manager.dhrunners.dpdns.org
+    service: http://localhost:8045
+  # SSH over Cloudflare Tunnel (requires DNS record + Cloudflare Access policy).
+  - hostname: ssh-odtuyet-wq-antigravity-manager.dhrunners.dpdns.org
+    service: ssh://localhost:2222
+  - service: http_status:404
